@@ -13,7 +13,7 @@ pip install equinox jax
 
 If desired, install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
 
-Run `demo.ipynb` for an example training on MNIST.
+Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
 
 ## Citation
 
