@@ -1,4 +1,4 @@
-from hamux import Neurons, HAM, VectorizedHAM
+from bbhamux import Neurons, HAM, VectorizedHAM
 import pytest
 from typing import *
 import jax
@@ -8,7 +8,7 @@ import jax.numpy as jnp
 import jax
 import jax.random as jr
 
-from hamux import (
+from bbhamux import (
     lagr_identity,
     _repu,
     lagr_repu,

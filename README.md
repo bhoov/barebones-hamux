@@ -3,18 +3,22 @@
 
 Build any hopfield network using energy fundamentals. See the original [HAMUX documentation](https://bhoov.com/hamux/) for explanation.
 
-## Quick Start
+## Install: File copy
 
-This repository is a minimal implementation of HAMUX. All logic is in one file: `hamux.py`. Please copy this file into whatever project you are working on, and modify as needed.
+All logic is in one file: `hamux.py`. Please copy this file into whatever project you are working on, and modify as needed. You will need to manually install dependencies:
 
 ```
 pip install equinox jax
 pip install pytest # for tests
 ```
 
-If desired, install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
+Install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
 
 Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
+
+## Install: Pip
+
+
 
 ## Tests
 
