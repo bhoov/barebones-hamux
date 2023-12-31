@@ -9,11 +9,20 @@ This repository is a minimal implementation of HAMUX. All logic is in one file: 
 
 ```
 pip install equinox jax
+pip install pytest # for tests
 ```
 
 If desired, install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
 
 Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
+
+## Tests
+
+All basic tests for this package are in `test.py`.
+
+```
+pytest test.py
+```
 
 ## Citation
 
