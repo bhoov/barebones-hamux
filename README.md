@@ -6,9 +6,17 @@ Consists of 1 main file `bbhamux.py` (`<200` lines of important code) and 1 demo
 
 *`bbhamux` is pronounced as "barebones hamux" or "baby hamux".*
 
-## Install: File copy (easy, for researchers)
+## Install with pip
 
-All logic is in one file: `bbhamux.py`. Please copy this file into whatever project you are working on, and modify as needed. You will need to manually install dependencies:
+```
+pip install bbhamux
+```
+
+## Install by copying `bbhamux.py`
+
+All logic is in one file: `bbhamux.py`. Copy this file into your project, modify as needed. The best kind of research code.
+
+You will need to manually install dependencies:
 
 ```
 pip install equinox jax
@@ -16,12 +24,6 @@ pip install pytest # for tests
 ```
 
 Install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
-
-## Install: Pip (easy, for developers)
-
-```
-pip install bbhamux
-```
 
 ## Quickstart
 
