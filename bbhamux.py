@@ -1,3 +1,4 @@
+#%%
 """HAMUX, a minimal implementation of the Hierarchical Associative Memory
 
 HAMUX is the skeleton of what could be an entirely new way to build DL architectures using energy blocks.
@@ -11,6 +12,7 @@ from typing import Union, Callable, Tuple, Dict, List, Optional
 import jax
 import jax.numpy as jnp
 import jax.tree_util as jtu
+import jax.random as jr
 
 
 class Neurons(eqx.Module):
@@ -52,6 +54,88 @@ class Neurons(eqx.Module):
         return f"Neurons(lagrangian={self.lagrangian}, shape={self.shape})"
 
 
+# =======================
+# Example Synapses. Use these for inspiration, but HAMUX intends you to implement your own
+# =======================
+#%% Synapses
+class DenseSynapse(eqx.Module):
+    """The simplest of dense (linear) functions that defines the energy between two layers"""
+
+    W: jax.Array
+
+    def __init__(self, key: jax.Array, g1_dim: int, g2_dim: int):
+        # Simplest initialization
+        self.W = 0.02 * jr.normal(key, (g1_dim, g2_dim))
+
+    def __call__(self, g1:jax.Array, g2:jax.Array):
+        """Compute the energy between activations g1 and g2.
+
+        The more aligned, the lower the energy"""
+        return -jnp.einsum("...c,...d,cd->...", g1, g2, self.W)
+
+class ConvSynapse(eqx.Module):
+    """Example conv synapse defined on single input"""
+    W: jax.Array
+    window_strides: Tuple[int, int]
+    padding: str
+    
+    def __init__(self,
+                 key, # Random weight generation seed
+                 channels_out:int, # nfilters
+                 channels_in:int, # Channels in input
+                 filter_shape:Tuple[int,int], # (h,w) size of filter
+                 window_strides:Tuple[int,int], # (h, w) size of each step
+                 padding="SAME",
+                 mu=0.5, # Mean of W initialization
+                 sigma=0.01, # stdev of W initialization
+                ):
+        
+        self.W = jr.normal(key, (channels_out, channels_in, *filter_shape)) * sigma + mu
+        self.window_strides = window_strides
+        self.padding=padding
+
+    def forward_conv(self, g1):
+        return jax.lax.conv_general_dilated(g1, self.W, window_strides=self.window_strides, padding=self.padding, dimension_numbers=("NHWC", "OIHW", "NHWC")) # in (1, H2, W2, Cout)
+        
+    def __call__(self, g1, g2):
+        assert len(g1.shape)== 3, f"Shape should be (H,W,C), no batch dimension. Got `{g1.shape}` for g1"
+        assert len(g2.shape)== 3, f"Shape should be (H,W,C), no batch dimension. Got `{g2.shape}` for g2"
+     
+        g1 = g1[None]
+        g2 = g2[None]
+        
+        sig1_into_2 = self.forward_conv(g1)
+        return -jnp.multiply(g2, sig1_into_2).sum()
+
+#%% ConvSynapse
+cout, cin = 7, 3
+filter_shape = (3,3)
+im_shape = (12,12,3)
+window_strides = (3,3)
+syn = ConvSynapse(jr.PRNGKey(2), cout, cin, filter_shape, window_strides)
+
+g1 = jr.normal(jr.PRNGKey(0), im_shape)
+x2 = syn.forward_conv(g1[None])
+assert x2.shape == (1, 4, 4, cout)
+
+# Every patch contributes an energy
+syn(g1, x2[0])
+
+#%% DenseSynapse
+N1, N2 = 3, 1
+g1 = jr.normal(jr.PRNGKey(0), (N1,))
+g1 = g1 / jnp.sqrt((g1 ** 2).sum())
+g2 = jnp.ones((N2,))
+syn = DenseSynapse(jr.PRNGKey(2), N1, N2)
+newW = syn.W.at[:,0].set(g1)
+syn = eqx.tree_at(lambda x: x.W, syn, newW)
+
+# If perfectly aligned, the energy should be -1 * magnitude of g1
+assert syn(4*g1, g2) == jnp.array(-4.)
+
+
+
+#%% HAM
 class HAM(eqx.Module):
     """The Hierarchical Associative Memory
 
@@ -253,160 +337,162 @@ class VectorizedHAM(eqx.Module):
 
 Feel free to use these as inspiration for building your own lagrangians. They're simple enough
 """
+
+
 def lagr_identity(x):
-  """The Lagrangian whose activation function is simply the identity."""
-  return 0.5 * jnp.power(x, 2).sum()
+    """The Lagrangian whose activation function is simply the identity."""
+    return 0.5 * jnp.power(x, 2).sum()
 
 
 def _repu(x, n):
-  return jnp.maximum(x, 0) ** n
+    return jnp.maximum(x, 0) ** n
 
 
 def lagr_repu(x, n):  # Degree of the polynomial in the power unit
-  """Rectified Power Unit of degree `n`"""
-  return 1 / n * jnp.power(jnp.maximum(x, 0), n).sum()
+    """Rectified Power Unit of degree `n`"""
+    return 1 / n * jnp.power(jnp.maximum(x, 0), n).sum()
 
 
 def lagr_relu(x):
-  """Rectified Linear Unit. Same as repu of degree 2"""
-  return lagr_repu(x, 2)
+    """Rectified Linear Unit. Same as repu of degree 2"""
+    return lagr_repu(x, 2)
 
 
 def lagr_softmax(
-  x,
-  beta: float = 1.0,  # Inverse temperature
-  axis: int = -1,
+    x,
+    beta: float = 1.0,  # Inverse temperature
+    axis: int = -1,
 ):  # Dimension over which to apply logsumexp
-  """The lagrangian of the softmax -- the logsumexp"""
-  return 1 / beta * jax.nn.logsumexp(beta * x, axis=axis, keepdims=False)
+    """The lagrangian of the softmax -- the logsumexp"""
+    return 1 / beta * jax.nn.logsumexp(beta * x, axis=axis, keepdims=False)
 
 
 def lagr_exp(x, beta: float = 1.0):  # Inverse temperature
-  """Exponential activation function, as in [Demicirgil et al.](https://arxiv.org/abs/1702.01929). Operates elementwise"""
-  return 1 / beta * jnp.exp(beta * x).sum()
+    """Exponential activation function, as in [Demicirgil et al.](https://arxiv.org/abs/1702.01929). Operates elementwise"""
+    return 1 / beta * jnp.exp(beta * x).sum()
 
 
 def _rexp(
-  x,
-  beta: float = 1.0,  # Inverse temperature
+    x,
+    beta: float = 1.0,  # Inverse temperature
 ):
-  """Rectified exponential activation function"""
-  xclipped = jnp.maximum(x, 0)
-  return jnp.exp(beta * xclipped) - 1
+    """Rectified exponential activation function"""
+    xclipped = jnp.maximum(x, 0)
+    return jnp.exp(beta * xclipped) - 1
 
 
 def lagr_rexp(x, beta: float = 1.0):  # Inverse temperature
-  """Lagrangian of the Rectified exponential activation function"""
-  xclipped = jnp.maximum(x, 0)
-  return (jnp.exp(beta * xclipped) / beta - xclipped).sum()
+    """Lagrangian of the Rectified exponential activation function"""
+    xclipped = jnp.maximum(x, 0)
+    return (jnp.exp(beta * xclipped) / beta - xclipped).sum()
 
 
 @jax.custom_jvp
 def _lagr_tanh(x, beta=1.0):
-  return 1 / beta * jnp.log(jnp.cosh(beta * x))
+    return 1 / beta * jnp.log(jnp.cosh(beta * x))
 
 
 @_lagr_tanh.defjvp
 def _lagr_tanh_defjvp(primals, tangents):
-  x, beta = primals
-  x_dot, beta_dot = tangents
-  primal_out = _lagr_tanh(x, beta)
-  tangent_out = jnp.tanh(beta * x) * x_dot
-  return primal_out, tangent_out
+    x, beta = primals
+    x_dot, beta_dot = tangents
+    primal_out = _lagr_tanh(x, beta)
+    tangent_out = jnp.tanh(beta * x) * x_dot
+    return primal_out, tangent_out
 
 
 def lagr_tanh(x, beta=1.0):  # Inverse temperature
-  """Lagrangian of the tanh activation function"""
-  return _lagr_tanh(x, beta).sum()
+    """Lagrangian of the tanh activation function"""
+    return _lagr_tanh(x, beta).sum()
 
 
 @jax.custom_jvp
 def _lagr_sigmoid(
-  x,
-  beta=1.0,  # Inverse temperature
-  scale=1.0,
+    x,
+    beta=1.0,  # Inverse temperature
+    scale=1.0,
 ):  # Amount to stretch the range of the sigmoid's lagrangian
-  """The lagrangian of a sigmoid that we can define custom JVPs of"""
-  return scale / beta * jnp.log(jnp.exp(beta * x) + 1)
+    """The lagrangian of a sigmoid that we can define custom JVPs of"""
+    return scale / beta * jnp.log(jnp.exp(beta * x) + 1)
 
 
 def _tempered_sigmoid(
-  x,
-  beta=1.0,  # Inverse temperature
-  scale=1.0,
+    x,
+    beta=1.0,  # Inverse temperature
+    scale=1.0,
 ):  # Amount to stretch the range of the sigmoid
-  """The basic sigmoid, but with a scaling factor"""
-  return scale / (1 + jnp.exp(-beta * x))
+    """The basic sigmoid, but with a scaling factor"""
+    return scale / (1 + jnp.exp(-beta * x))
 
 
 @_lagr_sigmoid.defjvp
 def _lagr_sigmoid_jvp(primals, tangents):
-  x, beta, scale = primals
-  x_dot, beta_dot, scale_dot = tangents
-  primal_out = _lagr_sigmoid(x, beta, scale)
-  tangent_out = (
-    _tempered_sigmoid(x, beta=beta, scale=scale) * x_dot
-  )  # Manually defined sigmoid
-  return primal_out, tangent_out
+    x, beta, scale = primals
+    x_dot, beta_dot, scale_dot = tangents
+    primal_out = _lagr_sigmoid(x, beta, scale)
+    tangent_out = (
+        _tempered_sigmoid(x, beta=beta, scale=scale) * x_dot
+    )  # Manually defined sigmoid
+    return primal_out, tangent_out
 
 
 def lagr_sigmoid(
-  x,
-  beta=1.0,  # Inverse temperature
-  scale=1.0,
+    x,
+    beta=1.0,  # Inverse temperature
+    scale=1.0,
 ):  # Amount to stretch the range of the sigmoid's lagrangian
-  """The lagrangian of the sigmoid activation function"""
-  return _lagr_sigmoid(x, beta=beta, scale=scale).sum()
+    """The lagrangian of the sigmoid activation function"""
+    return _lagr_sigmoid(x, beta=beta, scale=scale).sum()
 
 
 def _simple_layernorm(
-  x: jnp.ndarray,
-  gamma: float = 1.0,  # Scale the stdev
-  delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-  axis=-1,  # Which axis to normalize
-  eps=1e-5,  # Prevent division by 0
+    x: jnp.ndarray,
+    gamma: float = 1.0,  # Scale the stdev
+    delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
+    axis=-1,  # Which axis to normalize
+    eps=1e-5,  # Prevent division by 0
 ):
-  """Layer norm activation function"""
-  xmean = x.mean(axis, keepdims=True)
-  xmeaned = x - xmean
-  denominator = jnp.sqrt(jnp.power(xmeaned, 2).mean(axis, keepdims=True) + eps)
-  return gamma * xmeaned / denominator + delta
+    """Layer norm activation function"""
+    xmean = x.mean(axis, keepdims=True)
+    xmeaned = x - xmean
+    denominator = jnp.sqrt(jnp.power(xmeaned, 2).mean(axis, keepdims=True) + eps)
+    return gamma * xmeaned / denominator + delta
 
 
 def lagr_layernorm(
-  x: jnp.ndarray,
-  gamma: float = 1.0,  # Scale the stdev
-  delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-  axis=-1,  # Which axis to normalize
-  eps=1e-5,  # Prevent division by 0
+    x: jnp.ndarray,
+    gamma: float = 1.0,  # Scale the stdev
+    delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
+    axis=-1,  # Which axis to normalize
+    eps=1e-5,  # Prevent division by 0
 ):
-  """Lagrangian of the layer norm activation function"""
-  D = x.shape[axis] if axis is not None else x.size
-  xmean = x.mean(axis, keepdims=True)
-  xmeaned = x - xmean
-  y = jnp.sqrt(jnp.power(xmeaned, 2).mean(axis, keepdims=True) + eps)
-  return (D * gamma * y + (delta * x).sum()).sum()
+    """Lagrangian of the layer norm activation function"""
+    D = x.shape[axis] if axis is not None else x.size
+    xmean = x.mean(axis, keepdims=True)
+    xmeaned = x - xmean
+    y = jnp.sqrt(jnp.power(xmeaned, 2).mean(axis, keepdims=True) + eps)
+    return (D * gamma * y + (delta * x).sum()).sum()
 
 
 def _simple_spherical_norm(
-  x: jnp.ndarray,
-  gamma: float = 1.0,  # Scale the stdev
-  delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-  axis=-1,  # Which axis to normalize
-  eps=1e-5,  # Prevent division by 0
+    x: jnp.ndarray,
+    gamma: float = 1.0,  # Scale the stdev
+    delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
+    axis=-1,  # Which axis to normalize
+    eps=1e-5,  # Prevent division by 0
 ):
-  """Spherical norm activation function"""
-  xnorm = jnp.sqrt(jnp.power(x, 2).sum(axis, keepdims=True) + eps)
-  return gamma * x / xnorm + delta
+    """Spherical norm activation function"""
+    xnorm = jnp.sqrt(jnp.power(x, 2).sum(axis, keepdims=True) + eps)
+    return gamma * x / xnorm + delta
 
 
 def lagr_spherical_norm(
-  x: jnp.ndarray,
-  gamma: float = 1.0,  # Scale the stdev
-  delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-  axis=-1,  # Which axis to normalize
-  eps=1e-5,  # Prevent division by 0
+    x: jnp.ndarray,
+    gamma: float = 1.0,  # Scale the stdev
+    delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
+    axis=-1,  # Which axis to normalize
+    eps=1e-5,  # Prevent division by 0
 ):
-  """Lagrangian of the spherical norm activation function"""
-  y = jnp.sqrt(jnp.power(x, 2).sum(axis, keepdims=True) + eps)
-  return (gamma * y + (delta * x).sum()).sum()
+    """Lagrangian of the spherical norm activation function"""
+    y = jnp.sqrt(jnp.power(x, 2).sum(axis, keepdims=True) + eps)
+    return (gamma * y + (delta * x).sum()).sum()
