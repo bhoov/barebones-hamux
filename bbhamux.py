@@ -55,7 +55,9 @@ class Neurons(eqx.Module):
 
 
 # =======================
-# Example Synapses. Use these for inspiration, but HAMUX intends you to implement your own
+# Example Synapses. 
+# Use these for inspiration, but HAMUX intends you to implement your own
+# See `examples` for details
 # =======================
 #%% Synapses
 class DenseSynapse(eqx.Module):
@@ -106,34 +108,6 @@ class ConvSynapse(eqx.Module):
         
         sig1_into_2 = self.forward_conv(g1)
         return -jnp.multiply(g2, sig1_into_2).sum()
-
-#%% ConvSynapse
-cout, cin = 7, 3
-filter_shape = (3,3)
-im_shape = (12,12,3)
-window_strides = (3,3)
-syn = ConvSynapse(jr.PRNGKey(2), cout, cin, filter_shape, window_strides)
-
-g1 = jr.normal(jr.PRNGKey(0), im_shape)
-x2 = syn.forward_conv(g1[None])
-assert x2.shape == (1, 4, 4, cout)
-
-# Every patch contributes an energy
-syn(g1, x2[0])
-
-#%% DenseSynapse
-N1, N2 = 3, 1
-g1 = jr.normal(jr.PRNGKey(0), (N1,))
-g1 = g1 / jnp.sqrt((g1 ** 2).sum())
-g2 = jnp.ones((N2,))
-syn = DenseSynapse(jr.PRNGKey(2), N1, N2)
-newW = syn.W.at[:,0].set(g1)
-syn = eqx.tree_at(lambda x: x.W, syn, newW)
-
-# If perfectly aligned, the energy should be -1 * magnitude of g1
-assert syn(4*g1, g2) == jnp.array(-4.)
-
-
 
 #%% HAM
 class HAM(eqx.Module):
