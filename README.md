@@ -21,6 +21,7 @@ You will need to manually install dependencies:
 ```
 pip install equinox jax
 pip install pytest # for tests
+pip install nbdev # for docs and examples
 ```
 
 Install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
@@ -29,7 +30,13 @@ Install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
 
 Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
 
-## Testing
+## Contributing
+
+We use the [`poetry`](https://python-poetry.org/docs/) package management system. Install the `nbdev` and `pytest` dependencies in addition to the main dependencies:
+
+```
+poetry install --with dev
+```
 
 All basic tests for this package are in `test.py`.
 

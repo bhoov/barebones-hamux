@@ -12,8 +12,12 @@ jax = "^0.4.14"
 jaxtyping = "^0.2.25"
 equinox = "^0.11.2"
 
+[tool.poetry.group.dev]
+optional = true
+
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
+nbdev = "^2.3.13"
 
 [build-system]
 requires = ["poetry-core"]
