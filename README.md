@@ -32,7 +32,7 @@ Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
 
 ## Contributing
 
-We use the [`poetry`](https://python-poetry.org/docs/) package management system. Install the `nbdev` and `pytest` dependencies in addition to the main dependencies:
+We use [`poetry`](https://python-poetry.org/docs/) to manage dependencies. Install all dependencies (including `nbdev` and `pytest`) with:
 
 ```
 poetry install --with dev
