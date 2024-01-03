@@ -41,10 +41,19 @@ pytest test.py
 
 ## Writing docs
 
+Development 
+
 ```
 pip install nbdev
 # Edit documentation in `nbs/`
 nbdev_preview
+```
+
+Deploying
+
+```
+nbdev_docs
+# git commit & push `docs/` folder
 ```
 
 ## Contributing
