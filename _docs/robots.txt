@@ -1,1 +1,0 @@
-Sitemap: https://bhoov.github.io/barebones-hamux/sitemap.xml

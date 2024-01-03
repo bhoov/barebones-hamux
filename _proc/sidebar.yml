@@ -1,5 +1,0 @@
-website:
-  sidebar:
-    contents:
-      - 00_introduction.ipynb
-      - 01_core.ipynb
