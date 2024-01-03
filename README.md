@@ -6,6 +6,8 @@ Consists of 1 main file **`bbhamux.py`** (`<200` lines of important code) and 1 
 
 **All other files are scaffolding** for e.g., docs, tests, pypi.
 
+[The documentation](https://bhoov.com/barebones-hamux/) is designed to be a thorough but gentle introduction to everything you need to know about (energy-based) Associative Memories and Hopfield Networks.
+
 > *`bbhamux` is pronounced as "barebones hamux" or "baby hamux".*
 
 ## Install with pip
