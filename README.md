@@ -2,9 +2,11 @@
 > [HAMUX](https://github.com/bhoov/hamux) built using [equinox](https://github.com/patrick-kidger/equinox), minimal implementation. A temporary solution as HAMUX is being rebuilt.
 > See the original [HAMUX documentation](https://bhoov.com/hamux/) for explanation.
 
-Consists of 1 main file `bbhamux.py` (`<200` lines of important code) and 1 demo notebook: `demo.ipynb`. Some tests are included in `test.py`.
+Consists of 1 main file **`bbhamux.py`** (`<200` lines of important code) and 1 demo notebook: **`demo.ipynb`** 
 
-*`bbhamux` is pronounced as "barebones hamux" or "baby hamux".*
+**All other files are scaffolding** for e.g., docs, tests, pypi.
+
+> *`bbhamux` is pronounced as "barebones hamux" or "baby hamux".*
 
 ## Install with pip
 
