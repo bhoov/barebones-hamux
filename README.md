@@ -61,7 +61,7 @@ nbdev_docs
 We use [`poetry`](https://python-poetry.org/docs/) to manage dependencies. Install all dependencies (including `nbdev` and `pytest`) with:
 
 ```
-poetry install --with dev
+poetry install --with docs --with test
 ```
 
 ## Citation
