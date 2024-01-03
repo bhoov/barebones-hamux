@@ -1,0 +1,30 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "HAMUX",
+    "section": "",
+    "text": "HAMUX (Hierarchical Associative Memory User eXperience) is a Deep Learning framework designed around energy. Every architecture built in HAMUX is a global, Lyapunov energy function. HAMUX bridges modern AI architectures and Hopfield Networks."
+  },
+  {
+    "objectID": "index.html#what-is-hamux",
+    "href": "index.html#what-is-hamux",
+    "title": "HAMUX",
+    "section": "What is HAMUX?",
+    "text": "What is HAMUX?\n\n\n\nExplaining the “energy fundamentals” of HAMUX (Layers and Synapses, left) using a 4-layer, 3-synapse example HAM (middle) that can be built using the pseudocode on the right. (NOTE: code is not runnable in newer versions of HAMUX as the API has changed).\n\n\nHAMUX defines two fundamental building blocks of energy: the 🌀neuron layer and the 🤝hypersynapse (an abstraction of a pairwise synapse to include many-body interactions) connected via a hypergraph. It is a fully dynamical system, where the “hidden state” \\(x_i^\\ell\\) of each layer \\(\\ell\\) (blue squares in the figure below) is an independent variable that evolves over time. The update rule of each layer is entirely local: neurons evolve deterministically by accumulating “signals” from only the connected synapses (i.e., the red circles in the figure below). This is shown in the following equation:\n\\[\\tau \\frac{d x_{i}^{\\ell}}{dt} = -\\frac{\\partial E}{\\partial g_i^\\ell}\\]\nwhere \\(g_i^\\ell\\) are the activations (i.e., non-linearities) on each neuron layer \\(\\ell\\), described in the section on Neuron Layers. Concretely, we implement the above differential equation as the following discretized equation (where the bold \\({\\mathbf x}_\\ell\\) is the collection of all elements in layer \\(\\ell\\)’s state):\n\\[ \\mathbf{x}_\\ell^{(t+1)} = \\mathbf{x}_\\ell^{(t)} - \\frac{dt}{\\tau} \\nabla_{\\mathbf{g}_\\ell}E(t)\\]\nHAMUX handles all the complexity of scaling this fundamental update equation to many 🌀neurons and 🤝hypersynapses with as minimal overhead as possible. Essentially, HAMUX is a simplified hypergraph library that allows us to modularly compose energy functions. HAMUX makes it easy to:\n\nInject your data into the associative memory\nPerform inference (a.k.a., “Memory Retrieval”, “Error correction”, or “the forward pass”) by autograd-computed gradient descent of the energy function!\nBuild complex, powerful networks using arbitrary energy functions. E.g., we can easily build the Energy Transformer in this framework using a couple lines of code. See this tutorial (WIP).\n\nWe are continually trying to enrich our tutorials, which are implemented as working Jupyter Notebooks. HAMUX is built on the amazing JAX and equinox libraries."
+  },
+  {
+    "objectID": "index.html#how-to-use",
+    "href": "index.html#how-to-use",
+    "title": "HAMUX",
+    "section": "How to Use",
+    "text": "How to Use\nWe can build a simple 4 layer HAM architecture using the following code\n\nimport hamux as hmx\nfrom hamux.lagrangians import lagr_identity, lagr_sigmoid, lagr_softmax, lagr_tanh\nimport jax\nimport jax.numpy as jnp\nimport jax.random as jr\nimport jax.tree_util as jtu\nimport equinox as eqx\n\n\nimg_shape = (32,32,3) # E.g., CIFAR images\n\nclass ConvSynapse(Synapse):\n    conv: tx.Module    \n    \n    def __init__(self, conv:tx.Module):\n        self.conv = conv\n\n    def energy(self, g1, g2):\n        if self.initializing():\n            key = tx.next_key()\n            features_in = g1.shape[0]\n            features_out = g2.shape[0]\n            self.conv = self.conv.init(key, g1)\n        return jnp.multiply(g2, self.conv(g1)).sum()\n    \n    \ndef DenseSynapse(eqx.Module):\n    W: jax.Array\n    \n    def __init__(key: jax.Array, \n                 dim1:int, # Dimension of input `g1` to the energy\n                 dim2:int, # Dimension of input `g2` to the energy\n                ):\n        self.W = 0.01 * jr.normal(key, (dim1, dim2))\n        \n    def __call__(self, g1:jax.Array, g2:jax.Array):\n        return -jnp.einsum(\"...c,...d,cd->\", g1, g2, self.W)\n    \ndef ConvSynapse(eqx.Module):\n    W: jax.Array\n    \n    def __init__(key: jax.Array, \n                 dim1:int, # Dimension of input `g1` to the energy\n                 dim2:int, # Dimension of input `g2` to the energy\n                ):\n        self.W = 0.01 * jr.normal(key, (dim1, dim2))\n        \n    def __call__(self, g1:jax.Array, g2:jax.Array):\n        return -jnp.einsum(\"...c,...d,cd->\", g1, g2, self.W)\n                           \nneurons = {\n    \"image\": hmx.Neurons(lagr_identity, img_shape),\n    \"patch\": hmx.Neurons(lagr_tanh, (11,11,16)),\n    \"label\": hmx.Neurons(lagr_softmax, (10,)),\n    \"memory\": hmx.Neurons(lagr_softmax, (25,))\n}\n\nsynapses = {\n    \"conv1\": hmx.ConvSynapse((3,3), strides=3),\n    \"dense1\": hmx.DenseSynapse(),\n    \"dense2\": hmx.DenseSynapse(),\n}\n\nconnections = [\n    ([\"image\",\"patch\"], \"conv1\"),\n    ([\"label\", \"memory\"], \"dense1\"),\n    ([\"\", \"\"], \"dense2\"),\n]"
+  },
+  {
+    "objectID": "core.html",
+    "href": "core.html",
+    "title": "core",
+    "section": "",
+    "text": "foo\n\n foo ()"
+  }
+]
