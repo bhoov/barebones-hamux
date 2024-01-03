@@ -1,6 +1,7 @@
 __pycache__
 .ipynb_checkpoints
 dist/
+MANIFEST.in
 
 _publish.yml
 _quarto.yml
