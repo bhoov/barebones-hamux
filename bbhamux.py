@@ -13,6 +13,10 @@ import jax
 import jax.numpy as jnp
 import jax.tree_util as jtu
 import jax.random as jr
+from jax import lax
+from jax._src.numpy.reductions import _reduction_dims
+from jax._src.numpy.util import promote_args_inexact
+import numpy as np
 
 
 class Neurons(eqx.Module):
@@ -470,3 +474,75 @@ def lagr_spherical_norm(
     """Lagrangian of the spherical norm activation function"""
     y = jnp.sqrt(jnp.power(x, 2).sum(axis, keepdims=True) + eps)
     return (gamma * y + (delta * x).sum()).sum()
+
+
+def lagr_ghostmax(
+    a: Union[jax.Array, np.ndarray, np.bool_, np.number, bool, int, float, complex],
+    axis: Optional[int] = None,
+    b: Union[jax.Array, np.ndarray, np.bool_, np.number, bool, int, float, complex, None] = None,
+    keepdims: bool = False,
+    return_sign: bool = False):
+    """ A strictly convex version of logsumexp that concatenates 0 to the array before passing to logsumexp. Delegates `jax.nn.logsumexp` (documentation below)
+    
+    """ + jax.nn.logsumexp.__doc__
+    if b is not None:
+        a_arr, b_arr = promote_args_inexact("logsumexp", a, b)
+        a_arr = jnp.where(b_arr != 0, a_arr, -jnp.inf)
+    else:
+        a_arr, = promote_args_inexact("logsumexp", a)
+        b_arr = a_arr  # for type checking
+    pos_dims, dims = _reduction_dims(a_arr, axis)
+    amax = jnp.max(a_arr, axis=dims, keepdims=keepdims)
+    amax = lax.max(amax, 0.)
+    amax = lax.stop_gradient(lax.select(jnp.isfinite(amax), amax, lax.full_like(amax, 0)))
+    amax_with_dims = amax if keepdims else lax.expand_dims(amax, pos_dims)
+
+    # fast path if the result cannot be negative.
+    if b is None and not np.issubdtype(a_arr.dtype, np.complexfloating):
+        out = lax.add(lax.log(jnp.sum(lax.exp(lax.sub(a_arr, amax_with_dims)),
+                                      axis=dims, keepdims=keepdims) + lax.exp(-amax)),
+                      amax)
+        sign = jnp.where(jnp.isnan(out), out, 1.0)
+        sign = jnp.where(jnp.isneginf(out), 0.0, sign).astype(out.dtype)
+    else:
+        expsub = lax.exp(lax.sub(a_arr, amax_with_dims))
+        if b is not None:
+            expsub = lax.mul(expsub, b_arr)
+            
+        expsub = expsub + lax.exp(-amax_with_dims)
+        sumexp = jnp.sum(expsub, axis=dims, keepdims=keepdims)
+
+        sign = lax.stop_gradient(jnp.sign(sumexp))
+        if np.issubdtype(sumexp.dtype, np.complexfloating):
+            if return_sign:
+                sumexp = sign*sumexp
+            out = lax.add(lax.log(sumexp), amax)
+        else:
+            out = lax.add(lax.log(lax.abs(sumexp)), amax)
+    if return_sign:
+        return (out, sign)
+    if b is not None:
+        if not np.issubdtype(out.dtype, np.complexfloating):
+            with jax.debug_nans(False):
+                out = jnp.where(sign < 0, jnp.array(np.nan, dtype=out.dtype), out)
+        return out
+    return out
+
+def ghostmax(a, axis=None):
+    """Properly implemented ghostmax, robust to input scale. A softmax with additional `1+__` in the denominator. The derivative of `lseplus`"""
+    if axis is None:
+        og_shape = a.shape
+        a = jnp.pad(a.ravel(), ((1,0),), constant_values=0.)
+        a = jax.nn.softmax(a)
+        return a[1:].reshape(og_shape)
+    else:
+        pad_widths = [(0,0) for _ in range(len(a.shape))]
+        pad_widths[axis] = (1,0)
+        pad_width = tuple(pad_widths)
+        
+        a = jnp.pad(a, pad_width, constant_values=0.)
+        a = jax.nn.softmax(a, axis=axis)
+        
+        out_idxer = [slice(None) for _ in range(len(a.shape))]
+        out_idxer[axis] = slice(1, None)
+        return a[tuple(out_idxer)]
