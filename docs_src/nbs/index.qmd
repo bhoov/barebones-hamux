@@ -24,4 +24,5 @@ pip install bbhamux
 cd docs_src/
 nbdev_preview # Live preview docs site
 nbdev_test # Test the code examples in the docs
+nbdev_docs # Deploy the static docs site
 ```

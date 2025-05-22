@@ -1,0 +1,44 @@
+name: deploy-docs
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+    inputs:
+      publish_branch:
+        description: 'Branch name to publish docs to'
+        required: false
+        default: 'gh-pages'
+env:
+  OBJC_DISABLE_INITIALIZE_FORK_SAFETY: YES
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # These steps are copied from the composite action defined at the top
+      - uses: actions/checkout@v3
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          # enable-cache: true is not strictly needed as it's true by default on Github
+          enable-cache: true
+
+      - name: Install dependencies with uv
+        shell: bash
+        run: |
+          uv sync --verbose # Added --verbose for more output during install
+          uv pip install -e .
+
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          source .venv/bin/activate && cd docs_src/ && nbdev_docs
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Need to define inputs in this workflow
+          force_orphan: true
+          publish_dir: docs_src/_docs
+          user_name: github-actions[bot]
+          user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          publish_branch: ${{ inputs.publish_branch }} # Need to define inputs in this workflow
