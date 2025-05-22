@@ -1,3 +1,6 @@
+# If we accidentally run `nbdev_prepare`, we don't want to commit the generated source
+barebones-hamux/
+
 _docs/
 _proc/
 
