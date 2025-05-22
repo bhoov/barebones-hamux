@@ -3,11 +3,6 @@ on:
   push:
     branches: [main, dev]
   workflow_dispatch:
-    inputs:
-      publish_branch:
-        description: 'Branch name to publish docs to'
-        required: false
-        default: 'gh-pages'
 env:
   OBJC_DISABLE_INITIALIZE_FORK_SAFETY: YES
 jobs:
@@ -41,4 +36,4 @@ jobs:
           publish_dir: docs_src/_docs
           user_name: github-actions[bot]
           user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          publish_branch: ${{ inputs.publish_branch }} # Need to define inputs in this workflow
+          publish_branch: gh-pages
