@@ -1,0 +1,259 @@
+# Lagrangians
+
+> The well-behaved energy of associative memories is captured by the Lagrangian of the neurons
+
+The dynamic state of each [🌀neuron layer](./02_neurons.qmd) is constrained by a convex Lagrangian.
+
+
+```{python}
+#| echo: false
+#| output: false
+from bbhamux import (
+    lagr_identity, lagr_repu, lagr_relu, lagr_exp, 
+    lagr_layernorm, lagr_sigmoid, lagr_softmax, 
+    lagr_spherical_norm, lagr_tanh)
+
+from nbdev import show_doc
+
+import jax
+import jax.numpy as jnp
+import jax.random as jr
+import numpy as np
+import matplotlib.pyplot as plt
+import functools as ft
+```
+
+## Functional interface
+
+Lagrangian functions are fundamental to the energy of 🌀[neuron layers](./02_neurons.qmd). These convex functions can be seen as the integral of common activation functions (e.g., `relu`s and `softmax`es). All Lagrangians are functions of the form:
+
+$$\mathcal{L}(\mathbf{x};\ldots) \mapsto \mathbb{R}$$
+
+where $\mathbf{x} \in \mathbb{R}^{D_1 \times \ldots \times D_n}$ can be a tensor of arbitrary shape and $\mathcal{L}$ can be optionally parameterized (e.g., the `LayerNorm`'s learnable bias and scale). **Lagrangians must be convex and differentiable.**
+
+We want to rely on JAX's autograd to automatically differentiate our Lagrangians into activation functions. For certain Lagrangians, the naively autodiff-ed function of the defined Lagrangian is numerically unstable (e.g., `lagr_sigmoid(x)` and `lagr_tanh(x)`). In these cases, we follow JAX's [documentation guidelines](https://jax.readthedocs.io/en/latest/notebooks/Custom_derivative_rules_for_Python_code.html) to define `custom_jvp`s to fix this behavior.
+
+Let's look at what some of these Lagrangians look like in practice.
+
+## Elementwise Lagrangians
+
+Though we define Lagrangians for an entire tensor, these special "elementwise Lagrangians" take a special form: they are simply the sum of the convex, differentiable function applied elementwise to the underlying tensor. This makes it easy to plot and visualize them.
+
+```{python}
+#| echo: false
+show_doc(lagr_identity)
+```
+
+$$
+\mathcal{L}_\text{identity}(\mathbf{x}) = \frac{1}{2} \sum_i x_i^2
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{identity}(\mathbf{x}) = x_i
+$$
+
+
+```{python}
+#| echo: false
+x = np.linspace(-2,2,100)
+y = jax.grad(lagr_identity)(x)
+L = jax.vmap(lagr_identity)(x)
+fig, ax = plt.subplots(1)
+ax.plot(x,y, 'b--', x, L, 'g-')
+ax.set_title(r"$\mathcal{L}_\text{identity}(x) = \frac{1}{2} \sum x^2$")
+ax.legend(["activation", "lagrangian"])
+plt.show(fig)
+```
+
+
+
+```{python}
+show_doc(lagr_repu)
+```
+
+$$
+\mathcal{L}_\text{RePU}(\mathbf{x}; n) = \frac{1}{n} \sum_i \max(x_i, 0)^n
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{RePU}(\mathbf{x}; n) = \max(x_i, 0)^{n-1}
+$$
+
+
+```{python}
+#| echo: false
+x = np.linspace(-0.5,2,100)
+ns = [2,4]
+fig, ax = plt.subplots(1)
+colors = 'bgr'
+
+legend = []
+for i, n in enumerate(ns):
+    lag = jax.vmap(lambda x_: lagr_repu(x_, n=n))(x)
+    act = jax.grad(lambda x_: lagr_repu(x_, n=n))(x)
+    # ax.plot(x,act, 'b-', x,lag,'g--')
+    c = colors[i]
+    legend += [f"activation (n={n})", f"lagrangian (n={n})"]
+    ax.plot(x,act,f"{c}--", x,lag,f"{c}-")
+    ax.set_title(r"$\mathcal{L}_\text{RePU}(x; n) = \frac{1}{n} \sum \max(x, 0)^n$")
+
+ax.legend(legend)
+plt.show(fig)
+```
+
+
+```{python}
+show_doc(lagr_relu)
+```
+
+$$
+\mathcal{L}_\text{relu}(\mathbf{x}) = \frac{1}{2} \sum_i \max(x_i, 0)^2
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{relu}(\mathbf{x}) = \max(x_i, 0)
+$$
+
+
+```{python}
+show_doc(lagr_exp)
+```
+
+$$
+\mathcal{L}_\text{exp}(\mathbf{x}; \beta) = \frac{1}{\beta} \sum_i e^{\beta x_i}
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{exp}(\mathbf{x}; \beta) = e^{\beta x_i}
+$$
+
+
+```{python}
+#| echo: false
+x = np.linspace(-1,2,100)
+betas = [0.5,1.,1.5]
+fig, ax = plt.subplots(1)
+colors = 'bgr'
+
+legend = []
+for i, b in enumerate(betas):
+    lagr_fn = ft.partial(lagr_exp, beta=b)
+    y = jax.grad(lagr_fn)(x)
+    L = jax.vmap(lagr_fn)(x)
+    c = colors[i]
+    legend += [f"activation (beta={b})", f"lagrangian (beta={b})"]
+    ax.plot(x,y,f"{c}--", x,L,f"{c}-")
+    ax.set_title(r"$\mathcal{L}_\text{exp}(x; \beta) = \frac{1}{\beta} \sum_i e^{\beta x_i}$")
+
+ax.legend(legend)
+plt.show(fig)
+```
+
+```{python}
+show_doc(lagr_tanh)
+```
+
+$$
+\mathcal{L}_\text{tanh}(\mathbf{x}; \beta) = \frac{1}{\beta} \sum_i \log(\cosh(\beta x_i))
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{tanh}(\mathbf{x}; \beta) = \tanh(\beta x_i)
+$$
+
+
+```{python}
+show_doc(lagr_sigmoid)
+```
+
+$$
+\mathcal{L}_\text{sigmoid}(\mathbf{x}; \beta) = \frac{1}{\beta} \sum_i \log(e^{\beta x_i} + 1)
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{sigmoid}(\mathbf{x}; \beta) = \frac{1}{1+e^{-\beta x_i}}
+$$
+
+
+```{python}
+#| echo: false
+x = np.linspace(-6,6,100)
+betas = [0.5,1.,5.]
+fig, ax = plt.subplots(1)
+colors = 'bgr'
+
+legend = []
+for i, b in enumerate(betas):
+    lagr_fn = ft.partial(lagr_sigmoid, beta=b)
+    y = jax.grad(lagr_fn)(x)
+    L = jax.vmap(lagr_fn)(x)
+    c = colors[i]
+    legend += [f"activation (beta={b})", f"lagrangian (beta={b})"]
+    ax.plot(x,y,f"{c}--", x,L,f"{c}-")
+    # ax.set_title(r"$\mathcal{L}_\text{tanh}(x; \beta) = \frac{1}{\beta} \sum \log(\cosh(\beta x))$")
+    ax.set_title(r"$\mathcal{L}_\text{sigmoid}(x; \beta) = \frac{1}{\beta} \sum \log(e^{\beta x} + 1)$")
+
+
+
+ax.legend(legend)
+plt.show(fig)
+```
+
+
+## Lagrangians for competing units
+
+However, we can also have Lagrangians defined on neuron layers where every unit competes. There are many forms of activation functions in modern Deep Learning with this structure; e.g., `softmax`es, `layernorm`s, etc. normalize their input by some value. These activation functions can similarly be described by Lagrangians (and there is a nice interpretation of these kinds of activation functions as [competing hidden units](https://arxiv.org/abs/1806.10181), but it is harder to plot them.
+
+
+```{python}
+show_doc(lagr_softmax)
+```
+
+$$
+\mathcal{L}_\text{softmax}(\mathbf{x}; \beta) = \frac{1}{\beta} \log \sum_i e^{\beta x_i}
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{softmax}(\mathbf{x}; \beta) = \frac{e^{\beta x_i}}{\sum_j e^{\beta x_j}}
+$$
+
+We plot its activations (the softmax) for a vector of length 10 below.
+
+```{python}
+#| echo: false
+x = jr.normal(jr.PRNGKey(5), (10,))*1.5
+y = jax.grad(lagr_softmax)(x)
+fig, ax = plt.subplots(1)
+ax.bar(jnp.arange(len(x)), y)
+ax.set_xlabel("Index")
+ax.set_ylabel("Softmax Activation")
+ax.set_title(r"$\mathcal{L}_\text{softmax}(x; \beta) = \frac{1}{\beta} \log \sum_i e^{\beta x_i}$, where $\beta = 1$")
+ax.legend(["softmax"])
+plt.show(fig)
+```
+
+
+```{python}
+show_doc(lagr_layernorm)
+```
+
+$$
+\mathcal{L}_\text{layernorm}(\mathbf{x}; \gamma, \delta) = D \gamma \sqrt{\text{Var}(\mathbf{x}) + \epsilon} + \sum_i \delta_i x_i
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{layernorm}(\mathbf{x}; \gamma, \delta) = \gamma \frac{x_i - \text{Mean}(\mathbf{x})}{\sqrt{\text{Var}(\mathbf{x}) + \epsilon}} + \delta_i
+$$
+
+
+```{python}
+show_doc(lagr_spherical_norm)
+```
+
+$$
+\mathcal{L}_\text{L2norm}(\mathbf{x}; \gamma, \delta) = \gamma \sqrt{\sum_i x_i^2 + \epsilon} + \sum_i \delta_i x_i
+$$
+
+$$
+\partial_{x_i} \mathcal{L}_\text{L2norm}(\mathbf{x}; \gamma, \delta) = \gamma \frac{x_i}{\sqrt{\sum_j x_j^2 + \epsilon}} + \delta_i
+$$

@@ -35,6 +35,7 @@ from jax import lax
 from jax._src.numpy.reductions import _reduction_dims
 from jax._src.numpy.util import promote_args_inexact
 import numpy as np
+from jaxtyping import Float, Array
 
 #%% Neurons
 class Neurons(eqx.Module):
@@ -331,23 +332,30 @@ class VectorizedHAM(eqx.Module):
 Feel free to use these as inspiration for building your own lagrangians. They're simple enough
 """
 
+Scalar = Float[Array, ""]
+Tensor = Float[Array, "..."]
 
-def lagr_identity(x):
+def lagr_identity(x: Tensor # Input tensor
+                  ) -> Scalar:
     """The Lagrangian whose activation function is simply the identity."""
     return 0.5 * jnp.power(x, 2).sum()
 
 
-def _repu(x, n):
+def _repu(x: Float[Array, "..."], # Input tensor
+          n: float # Degree of the polynomial in the power unit
+          ) -> Scalar:
     return jnp.maximum(x, 0) ** n
 
 
-def lagr_repu(x, n):  # Degree of the polynomial in the power unit
+def lagr_repu(x: Float[Array, "..."], # Input tensor
+              n: float # Degree of the polynomial in the power unit
+              ) -> Scalar:
     """Rectified Power Unit of degree `n`"""
     return 1 / n * jnp.power(jnp.maximum(x, 0), n).sum()
 
 
 def lagr_relu(x):
-    """Rectified Linear Unit. Same as repu of degree 2"""
+    """Rectified Linear Unit. Same as `lagr_repu` of degree 2"""
     return lagr_repu(x, 2)
 
 
