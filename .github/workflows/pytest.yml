@@ -1,8 +1,3 @@
-# Adapted from https://jacobian.org/til/github-actions-poetry/
-# Run this job on pushes to `main`, and for pull requests. If you don't specify
-# `branches: [main], then this actions runs _twice_ on pull requests, which is
-# annoying.
-
 on:
   push:
     branches: [main, dev]
@@ -15,25 +10,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Install and set up uv using the official action
-      # This action handles installing uv and setting up its environment,
-      # including caching if enabled.
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
         with:
-          # enable-cache: true is not strictly needed as it's true by default
-          # but explicitly setting it can be clearer.
+          # enable-cache: true is not strictly needed as it's true by default on Github
           enable-cache: true
-          # The action automatically uses pyproject.toml for caching dependencies
-          # if it exists, or requirements.txt. You can customize with cache-dependency-glob.
 
-      # Install dependencies using uv sync.
-      # uv sync reads pyproject.toml (or requirements.txt) and synchronizes the environment.
-      # The setup-uv action's caching helps speed this up on subsequent runs.
       - name: Install dependencies with uv
         run: uv sync --verbose # Added --verbose for more output during install
 
-      # Run tests using uv run.
-      # uv run executes the command in the activated uv environment.
       - name: Run tests with uv
-        run: uv run pytest . # Runs pytest using the activated environment managed by uv
+        run: uv run pytest .
