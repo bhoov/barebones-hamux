@@ -5,8 +5,11 @@ MANIFEST.in
 .pytest_cache/
 .venv/
 dist/
+data/*
 
 _publish.yml
 _quarto.yml
 _proc/
 _docs/
+
+!**/.gitkeep
