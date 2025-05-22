@@ -6,6 +6,7 @@ MANIFEST.in
 .venv/
 dist/
 data/*
+*.egg-info
 
 _publish.yml
 _quarto.yml

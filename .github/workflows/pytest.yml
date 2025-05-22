@@ -19,5 +19,8 @@ jobs:
       - name: Install dependencies with uv
         run: uv sync --verbose # Added --verbose for more output during install
 
+      - name: Editable install package
+        run: uv pip install -e .
+
       - name: Run tests with uv
-        run: uv run pytest .
+        run: uv run pytest tests

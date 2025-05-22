@@ -2,7 +2,7 @@
 > [HAMUX](https://github.com/bhoov/hamux) built using [equinox](https://github.com/patrick-kidger/equinox), minimal implementation. A temporary solution as HAMUX is being rebuilt.
 > See the original [HAMUX documentation](https://bhoov.com/hamux/) for explanation.
 
-Consists of 1 main file **`bbhamux.py`** (`<200` lines of important code) and 1 demo notebook: **`demo.ipynb`** 
+Consists of 1 main file **`src/bbhamux/bbhamux.py`** (`<200` lines of important code) and 1 demo notebook: **`demo.ipynb`** 
 
 **All other files are scaffolding** for e.g., docs, tests, pypi...
 
@@ -20,7 +20,7 @@ pip install bbhamux
 
 **From single file**
 
-All logic is in one file: `bbhamux.py`. Copy this file into your project, modify as needed. *The best kind of research code.*
+All logic is in one file: `src/bbhamux/bbhamux.py`. Copy this file into your project, modify as needed. *The best kind of research code.*
 
 You will need to manually install dependencies:
 
@@ -67,8 +67,11 @@ uv pip install -U "jax[cuda12]"
 # Verify your JAX installation works with your GPU:
 uv run python -c "import jax; import jax.numpy as jnp; print(jax.devices('gpu')); print(jnp.ones(2) * jnp.zeros(2))"
 
+# Editable install
+uv pip install -e .
+
 # Check that code works
-uv run pytest
+uv run pytest tests
 ```
 
 Finally, run `demo.ipynb` using the ipython kernel `bbhamux` (installed by `setup.sh`).

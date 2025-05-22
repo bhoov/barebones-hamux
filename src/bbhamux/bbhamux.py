@@ -6,6 +6,25 @@ HAMUX is the skeleton of what could be an entirely new way to build DL architect
 All logic is contained in this single file.
 """
 
+__all__ = [
+    "Neurons",
+    "DenseSynapse",
+    "ConvSynapse",
+    "HAM",
+    "VectorizedHAM",
+    "lagr_identity",
+    "lagr_repu",
+    "lagr_relu",
+    "lagr_softmax",
+    "lagr_exp",
+    "lagr_rexp",
+    "lagr_tanh",
+    "lagr_sigmoid",
+    "lagr_layernorm",
+    "lagr_spherical_norm",
+    "lagr_ghostmax",
+]
+
 import equinox as eqx
 from typing import Union, Callable, Tuple, Dict, List, Optional
 import jax

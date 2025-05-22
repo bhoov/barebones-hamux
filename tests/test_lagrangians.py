@@ -1,19 +1,21 @@
 from bbhamux import (
     lagr_identity,
-    _repu,
     lagr_repu,
     lagr_softmax,
     lagr_exp,
-    _rexp,
     lagr_rexp,
     lagr_tanh,
-    _tempered_sigmoid,
     lagr_sigmoid,
-    _simple_layernorm,
     lagr_layernorm,
-    _simple_spherical_norm,
     lagr_spherical_norm,
     lagr_ghostmax,
+)
+from bbhamux.bbhamux import (
+    _repu,
+    _rexp,
+    _tempered_sigmoid,
+    _simple_layernorm,
+    _simple_spherical_norm,
     ghostmax,
 )
 import jax
