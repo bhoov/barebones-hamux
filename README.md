@@ -43,13 +43,35 @@ Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
 
 ## Development & Contributing
 
-We use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to manage dependencies. After cloning:
+We use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to manage dependencies. 
 
+Get started with your dev environment. After cloning:
+
+```bash
+. scripts/setup.sh # Setup the environment
+. scripts/activate.sh # Activate the environment
+
+# JAX installation:
+# The base dependencies install a CPU version of JAX.
+# For GPU acceleration, you need to install a specific JAX+CUDA version
+# compatible with your hardware setup. Find the correct version here:
+# https://jax.readthedocs.io/en/latest/installation.html#cuda-gpu-support
+#
+# **Important:** Run the correct `uv pip install -U "jax[cudaXX]"` command
+# *after* running the setup script whenever you set up or resync your environment
+# to ensure the correct JAX version is active.
+#
+# Example for CUDA 12:
+uv pip install -U "jax[cuda12]"
+
+# Verify your JAX installation works with your GPU:
+uv run python -c "import jax; import jax.numpy as jnp; print(jax.devices('gpu')); print(jnp.ones(2) * jnp.zeros(2))"
+
+# Check that code works
+uv run pytest
 ```
-uv sync # Install all dependencies
-uv run pytest # Check that everything works
-# Run demo.ipynb
-```
+
+Finally, run `demo.ipynb` using the ipython kernel `bbhamux` (installed by `setup.sh`).
 
 ## Citation
 
