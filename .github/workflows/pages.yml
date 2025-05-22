@@ -8,6 +8,8 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       # These steps are copied from the composite action defined at the top
       - uses: actions/checkout@v3
