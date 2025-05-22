@@ -1,0 +1,5 @@
+website:
+  sidebar:
+    contents:
+      - index.qmd
+      - 99_using_nbdev.qmd
