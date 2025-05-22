@@ -4,21 +4,23 @@
 
 Consists of 1 main file **`bbhamux.py`** (`<200` lines of important code) and 1 demo notebook: **`demo.ipynb`** 
 
-**All other files are scaffolding** for e.g., docs, tests, pypi.
+**All other files are scaffolding** for e.g., docs, tests, pypi...
 
 [The documentation](https://bhoov.com/barebones-hamux/) is designed to be a thorough but gentle introduction to everything you need to know about (energy-based) Associative Memories and Hopfield Networks.
 
 > *`bbhamux` is pronounced as "barebones hamux" or "baby hamux".*
 
-## Install with pip
+## Installation
+
+**From pip**
 
 ```
 pip install bbhamux
 ```
 
-## Install by copying `bbhamux.py`
+**From single file**
 
-All logic is in one file: `bbhamux.py`. Copy this file into your project, modify as needed. The best kind of research code.
+All logic is in one file: `bbhamux.py`. Copy this file into your project, modify as needed. *The best kind of research code.*
 
 You will need to manually install dependencies:
 
@@ -28,10 +30,6 @@ pip install equinox jax
 
 Install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
 
-## Quickstart
-
-Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
-
 ## Testing
 
 ```
@@ -39,29 +37,17 @@ pip install pytest
 pytest test.py
 ```
 
-## Writing docs
+## Quickstart
 
-Development 
-
-```
-pip install nbdev
-# Edit documentation in `nbs/`
-nbdev_preview
-```
-
-Deploying
-
-```
-nbdev_docs
-# git commit & push `docs/` folder
-```
+Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
 
 ## Contributing
 
-We use [`poetry`](https://python-poetry.org/docs/) to manage dependencies. Install all dependencies (including `nbdev` and `pytest`) with:
+We use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to manage dependencies. After cloning:
 
 ```
-poetry install --with docs --with test
+uv sync # Install all dependencies
+uv run pytest # Check that everything works
 ```
 
 ## Citation

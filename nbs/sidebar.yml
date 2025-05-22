@@ -1,8 +1,0 @@
-website:
-  sidebar:
-    contents:
-      - 00_intro.ipynb
-      - 01_core.ipynb
-      - section: tutorials
-        contents:
-          - tutorials/00_Energy Transformer.ipynb

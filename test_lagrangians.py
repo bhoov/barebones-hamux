@@ -19,9 +19,6 @@ from bbhamux import (
 import jax
 import jax.numpy as jnp
 import jax.random as jr
-import jax.tree_util as jtu
-import jax.random as jr
-import equinox as eqx
 import pytest
 import functools as ft
 

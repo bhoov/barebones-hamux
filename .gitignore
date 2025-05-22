@@ -2,6 +2,9 @@ __pycache__
 .ipynb_checkpoints
 dist/
 MANIFEST.in
+.pytest_cache/
+.venv/
+dist/
 
 _publish.yml
 _quarto.yml

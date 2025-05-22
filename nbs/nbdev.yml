@@ -1,9 +1,0 @@
-project:
-  output-dir: docs
-
-website:
-  title: "barebones-hamux"
-  site-url: "https://bhoov.github.io/barebones-hamux"
-  description: "Minimal library to construct Hierarchical Associative Memories"
-  repo-branch: main
-  repo-url: "https://github.com/bhoov/barebones-hamux"

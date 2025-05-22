@@ -6,7 +6,6 @@ HAMUX is the skeleton of what could be an entirely new way to build DL architect
 All logic is contained in this single file.
 """
 
-
 import equinox as eqx
 from typing import Union, Callable, Tuple, Dict, List, Optional
 import jax
@@ -18,7 +17,7 @@ from jax._src.numpy.reductions import _reduction_dims
 from jax._src.numpy.util import promote_args_inexact
 import numpy as np
 
-
+#%% Neurons
 class Neurons(eqx.Module):
     """Neurons represent dynamic variables in the HAM that are evolved during inference (i.e., memory retrieval/error correction)
 
@@ -56,7 +55,6 @@ class Neurons(eqx.Module):
 
     def __repr__(self: jax.Array):
         return f"Neurons(lagrangian={self.lagrangian}, shape={self.shape})"
-
 
 # =======================
 # Example Synapses. 
@@ -303,10 +301,8 @@ class VectorizedHAM(eqx.Module):
     def vectorize(self):
         return self
 
-
-# =======================
+#%% Lagrangians
 # Example Lagrangians
-# =======================
 """Default lagrangian functions that correspond to commonly used non-linearities in Neural networks.
 
 1. Lagrangians return a scalar.
