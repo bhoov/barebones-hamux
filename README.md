@@ -30,24 +30,25 @@ pip install equinox jax
 
 Install correct version of `jaxlib` for your hardware (e.g., to run on GPUs).
 
-## Testing
+### Testing
 
 ```
 pip install pytest
 pytest test.py
 ```
 
-## Quickstart
+### Quickstart
 
 Run `demo.ipynb` for an example training on MNIST. *Works best with GPU*
 
-## Contributing
+## Development & Contributing
 
 We use [`uv`](https://docs.astral.sh/uv/getting-started/installation/) to manage dependencies. After cloning:
 
 ```
 uv sync # Install all dependencies
 uv run pytest # Check that everything works
+# Run demo.ipynb
 ```
 
 ## Citation
