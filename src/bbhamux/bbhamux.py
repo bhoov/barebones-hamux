@@ -335,61 +335,68 @@ Feel free to use these as inspiration for building your own lagrangians. They're
 Scalar = Float[Array, ""]
 Tensor = Float[Array, "..."]
 
-def lagr_identity(x: Tensor # Input tensor
-                  ) -> Scalar:
+def lagr_identity(x: Array, # Input tensor
+                  ) -> Float: # Output scalar
     """The Lagrangian whose activation function is simply the identity."""
     return 0.5 * jnp.power(x, 2).sum()
 
 
-def _repu(x: Float[Array, "..."], # Input tensor
+def _repu(x: Array, # Input tensor
           n: float # Degree of the polynomial in the power unit
-          ) -> Scalar:
+          ) -> Float: # Output scalar
     return jnp.maximum(x, 0) ** n
 
 
-def lagr_repu(x: Float[Array, "..."], # Input tensor
+def lagr_repu(x: Array, # Input tensor
               n: float # Degree of the polynomial in the power unit
-              ) -> Scalar:
+              ) -> Float: # Output scalar
     """Rectified Power Unit of degree `n`"""
     return 1 / n * jnp.power(jnp.maximum(x, 0), n).sum()
 
 
-def lagr_relu(x):
+def lagr_relu(x: Array, # Input tensor
+              ) -> Float: # Output scalar
     """Rectified Linear Unit. Same as `lagr_repu` of degree 2"""
     return lagr_repu(x, 2)
 
 
 def lagr_softmax(
-    x,
+    x: Array, # Input tensor
     beta: float = 1.0,  # Inverse temperature
-    axis: int = -1,
-):  # Dimension over which to apply logsumexp
+    axis: int = -1, # Dimension over which to apply logsumexp
+) -> Float: # Output scalar
     """The lagrangian of the softmax -- the logsumexp"""
     return 1 / beta * jax.nn.logsumexp(beta * x, axis=axis, keepdims=False)
 
 
-def lagr_exp(x, beta: float = 1.0):  # Inverse temperature
+def lagr_exp(x: Array, # Input tensor
+             beta: float = 1.0, # Inverse temperature
+             ) -> Float: # Output scalar
     """Exponential activation function, as in [Demicirgil et al.](https://arxiv.org/abs/1702.01929). Operates elementwise"""
     return 1 / beta * jnp.exp(beta * x).sum()
 
 
 def _rexp(
-    x,
+    x: Array, # Input tensor
     beta: float = 1.0,  # Inverse temperature
-):
+) -> Float: # Output scalar
     """Rectified exponential activation function"""
     xclipped = jnp.maximum(x, 0)
     return jnp.exp(beta * xclipped) - 1
 
 
-def lagr_rexp(x, beta: float = 1.0):  # Inverse temperature
+def lagr_rexp(x: Array,
+              beta: float = 1.0, # Inverse temperature
+              ) -> Float: # Output scalar
     """Lagrangian of the Rectified exponential activation function"""
     xclipped = jnp.maximum(x, 0)
     return (jnp.exp(beta * xclipped) / beta - xclipped).sum()
 
 
 @jax.custom_jvp
-def _lagr_tanh(x, beta=1.0):
+def _lagr_tanh(x: Array, # Input tensor
+               beta: float = 1.0, # Inverse temperature
+               ) -> Float: # Output scalar
     return 1 / beta * jnp.log(jnp.cosh(beta * x))
 
 
@@ -402,25 +409,27 @@ def _lagr_tanh_defjvp(primals, tangents):
     return primal_out, tangent_out
 
 
-def lagr_tanh(x, beta=1.0):  # Inverse temperature
+def lagr_tanh(x: Array, # Input tensor
+              beta: float = 1.0, # Inverse temperature
+              ) -> Float: # Output scalar
     """Lagrangian of the tanh activation function"""
     return _lagr_tanh(x, beta).sum()
 
 
 @jax.custom_jvp
 def _lagr_sigmoid(
-    x,
-    beta=1.0,  # Inverse temperature
-):  # Amount to stretch the range of the sigmoid's lagrangian
+    x: Array, # Input tensor
+    beta: float = 1.0,  # Inverse temperature
+    ) -> Float: # Output scalar
     """The lagrangian of a sigmoid that we can define custom JVPs of"""
     return 1. / beta * jnp.log(jnp.exp(beta * x) + 1)
 
 
-def _tempered_sigmoid(
-    x,
-    beta=1.0,  # Inverse temperature
-):  # Amount to stretch the range of the sigmoid
-    """The basic sigmoid, but with a scaling factor"""
+def _sigmoid(
+    x: Array, # Input tensor
+    beta: float = 1.0,  # Inverse temperature
+    ) -> Float: # Output scalar
+    """The basic sigmoid"""
     return 1. / (1 + jnp.exp(-beta * x))
 
 
@@ -430,26 +439,26 @@ def _lagr_sigmoid_jvp(primals, tangents):
     x_dot, beta_dot = tangents
     primal_out = _lagr_sigmoid(x, beta)
     tangent_out = (
-        _tempered_sigmoid(x, beta=beta) * x_dot
+        _sigmoid(x, beta=beta) * x_dot
     )  # Manually defined sigmoid
     return primal_out, tangent_out
 
 
 def lagr_sigmoid(
-    x,
-    beta=1.0,  # Inverse temperature
-):  # Amount to stretch the range of the sigmoid's lagrangian
+    x: Array, # Input tensor
+    beta: float = 1.0,  # Inverse temperature
+) -> Float: # Output scalar
     """The lagrangian of the sigmoid activation function"""
     return _lagr_sigmoid(x, beta=beta).sum()
 
 
 def _simple_layernorm(
-    x: jnp.ndarray,
+    x: Array, # Input tensor
     gamma: float = 1.0,  # Scale the stdev
-    delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-    axis=-1,  # Which axis to normalize
-    eps=1e-5,  # Prevent division by 0
-):
+    delta: Union[float, Array] = 0.0,  # Shift the mean
+    axis: int = -1,  # Which axis to normalize
+    eps: float = 1e-5,  # Prevent division by 0
+) -> Array: # Layer normalized `x`
     """Layer norm activation function"""
     xmean = x.mean(axis, keepdims=True)
     xmeaned = x - xmean
@@ -458,13 +467,16 @@ def _simple_layernorm(
 
 
 def lagr_layernorm(
-    x: jnp.ndarray,
+    x: Array, # Input tensor
     gamma: float = 1.0,  # Scale the stdev
-    delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-    axis=-1,  # Which axis to normalize
-    eps=1e-5,  # Prevent division by 0
-):
-    """Lagrangian of the layer norm activation function"""
+    delta: Union[float, Array] = 0.0,  # Shift the mean
+    axis: int = -1,  # Which axis to normalize
+    eps: float = 1e-5,  # Prevent division by 0
+) -> Float: # Output scalar
+    """Lagrangian of the layer norm activation function. 
+    
+    `gamma` must be a float, not a vector.
+    """
     D = x.shape[axis] if axis is not None else x.size
     xmean = x.mean(axis, keepdims=True)
     xmeaned = x - xmean
@@ -473,10 +485,10 @@ def lagr_layernorm(
 
 
 def _simple_spherical_norm(
-    x: jnp.ndarray,
+    x: Array, # Input tensor
     gamma: float = 1.0,  # Scale the stdev
-    delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-    axis=-1,  # Which axis to normalize
+    delta: Union[float, Array] = 0.0,  # Shift the mean
+    axis: int = -1,  # Which axis to normalize
     eps=1e-5,  # Prevent division by 0
 ):
     """Spherical norm activation function"""
@@ -485,24 +497,25 @@ def _simple_spherical_norm(
 
 
 def lagr_spherical_norm(
-    x: Array,
+    x: Array, # input tensor
     gamma: float = 1.0,  # Scale the stdev
     delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
-    axis=-1,  # Which axis to normalize
-    eps=1e-5,  # Prevent division by 0
-):
+    axis: int=-1,  # Which axis to normalize
+    eps: float=1e-5,  # Prevent division by 0
+) -> Float: # Output scalar
     """Lagrangian of the spherical norm (L2 norm) activation function"""
     y = jnp.sqrt(jnp.power(x, 2).sum(axis, keepdims=True) + eps)
     return (gamma * y + (delta * x).sum()).sum()
 
 
 def lagr_ghostmax(
-    a: Union[jax.Array, np.ndarray, np.bool_, np.number, bool, int, float, complex],
-    axis: Optional[int] = None,
-    b: Union[jax.Array, np.ndarray, np.bool_, np.number, bool, int, float, complex, None] = None,
-    keepdims: bool = False,
-    return_sign: bool = False):
-    """ A strictly convex version of logsumexp that concatenates 0 to the array before passing to logsumexp. Delegates `jax.nn.logsumexp` (documentation below)
+    a: Array, # Input tensor
+    axis: Optional[int] = None, # Axis along which the sum to be computed. If None, the sum is computed along all the axes.
+    b: Union[Array, None] = None, # Scaling factors for the exponentials. Must be broadcastable to the shape of a.
+    keepdims: bool = False, # If `True`, the axes that are reduced are left in the output as dimensions of size 1.
+    return_sign: bool = False, #  If `True`, the output will be a (result, sign) pair, where sign is the sign of the sums and result contains the logarithms of their absolute values. If False only result is returned and it will contain NaN values if the sums are negative.
+    ) -> Union[Array, Tuple[Array, Array]]: # Either an array result or a pair of arrays (result, sign), depending on the value of the return_sign argument.
+    """ A strictly convex version of logsumexp that concatenates 0 to the array before passing to logsumexp. Code adapted from `jax.nn.logsumexp` (documentation below)
     
     """ + jax.nn.logsumexp.__doc__
     if b is not None:
