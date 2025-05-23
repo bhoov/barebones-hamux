@@ -1,0 +1,112 @@
+[
+  {
+    "objectID": "99_using_nbdev.html",
+    "href": "99_using_nbdev.html",
+    "title": "Reflections on nbdev as documentation",
+    "section": "",
+    "text": "Trial run using nbdev for documentation only\n\nMy approach was to create a docs_src/ folder in my project root, import the code that I write using standard tools/test suites, and use nbdev just to generate the docs and examples that I want to deploy alongside my app.\nI’m writing docs in .qmd format to avoid the headache of jupyter+git+vim+AI assist in VSCode.\n\n\nFollowing are the pros/cons of switching to using nbdev solely for the documentation instead of also for the code\nPros:\n\nI avoid a necessary “transpilation” step converting notebooks to python files every time I make a change to my code\nI can use VSCode’s excellent interactive python mode to develop my codebase\nI get to keep my\nCan use all nbdev goodies to make my executable documentation/test mix\nCan keep my code as a simple python file in the original repo\n\nCons:\n\nREADME of original repo is different than the nbs/index.qmd (nbd)\nMy docs/tests/code become scattered across my repo, some living in the documentation, others living in dedicated pytest files\nI don’t get the auto-generated __all__ export",
+    "crumbs": [
+      "Reflections on `nbdev` as documentation"
+    ]
+  },
+  {
+    "objectID": "99_using_nbdev.html#proscons",
+    "href": "99_using_nbdev.html#proscons",
+    "title": "Reflections on nbdev as documentation",
+    "section": "",
+    "text": "Following are the pros/cons of switching to using nbdev solely for the documentation instead of also for the code\nPros:\n\nI avoid a necessary “transpilation” step converting notebooks to python files every time I make a change to my code\nI can use VSCode’s excellent interactive python mode to develop my codebase\nI get to keep my\nCan use all nbdev goodies to make my executable documentation/test mix\nCan keep my code as a simple python file in the original repo\n\nCons:\n\nREADME of original repo is different than the nbs/index.qmd (nbd)\nMy docs/tests/code become scattered across my repo, some living in the documentation, others living in dedicated pytest files\nI don’t get the auto-generated __all__ export",
+    "crumbs": [
+      "Reflections on `nbdev` as documentation"
+    ]
+  },
+  {
+    "objectID": "index.html#getting-started",
+    "href": "index.html#getting-started",
+    "title": "HAMUX",
+    "section": "Getting started",
+    "text": "Getting started\n\n\n\n\n\n\nNote\n\n\n\nThis documentation walks through how to use the package as if installing from pip, but the main logic for this repo lives in a single .py file (src/bbhamux/bbhamux.py). See the original README for instructions on how to just copy and use the important file.\n\n\npip install bbhamux",
+    "crumbs": [
+      "HAMUX"
+    ]
+  },
+  {
+    "objectID": "index.html#hamux-is-a-universal-abstraction-for-hopfield-networks",
+    "href": "index.html#hamux-is-a-universal-abstraction-for-hopfield-networks",
+    "title": "HAMUX",
+    "section": "HAMUX is a universal abstraction for Hopfield Networks",
+    "text": "HAMUX is a universal abstraction for Hopfield Networks\nHAMUX fully captures the the energy fundamentals of Hopfield Networks and enables anyone to:\n\n🧠 Build DEEP Hopfield nets\n🧱 With modular ENERGY components\n🏆 That resemble modern DL operations\n\nEvery architecture built using HAMUX is a dynamical system guaranteed to have a tractable energy function that converges to a fixed point. Our deep Hierarchical Associative Memories (HAMs) have several additional advantages over traditional Hopfield Networks (HNs):\n\n\n\n\n\n\n\nHopfield Networks (HNs)\nHierarchical Associative Memories (HAMs)\n\n\n\n\nHNs are only two layers systems\nHAMs connect any number of layers\n\n\nHNs model only simple relationships between layers\nHAMs model any complex but differentiable operation (e.g., convolutions, pooling, attention, \\(\\ldots\\))\n\n\nHNs use only pairwise synapses\nHAMs use many-body synapses (which we denote HyperSynapses)",
+    "crumbs": [
+      "HAMUX"
+    ]
+  },
+  {
+    "objectID": "index.html#how-does-hamux-work",
+    "href": "index.html#how-does-hamux-work",
+    "title": "HAMUX",
+    "section": "How does HAMUX work?",
+    "text": "How does HAMUX work?\n\nHAMUX is a hypergraph` of 🌀neurons connected via 🤝hypersynapses, an abstraction sufficiently general to model the complexity of connections used in modern AI architectures.\n\nHAMUX defines two fundamental building blocks of energy: the 🌀neuron layer and the 🤝hypersynapse (an abstraction of a pairwise synapse to include many-body interactions) connected via a hypergraph. It is a fully dynamical system, where the “hidden state” \\(x_i^l\\) of each layer \\(l\\) (blue squares in the figure below) is an independent variable that evolves over time. The update rule of each layer is entirely local; only signals from a layer’s connected synapses (red circles in the figure below) can tell the hidden state how to change. This is shown in the following equation:\n\\[\\tau \\frac{d x_{i}^{l}}{dt} = -\\frac{\\partial E}{\\partial g_i^l}\\]\nwhere \\(g_i^l\\) are the activations (i.e., non-linearities) on each neuron layer, described in the section on Neuron Layers. Concretely, we implement the above differential equation as the following discretized equation (where the bold \\({\\mathbf x}_l\\) is the collection of all elements in layer \\(l\\)’s state):\n\\[ \\mathbf{x}_l^{(t+1)} = \\mathbf{x}_l^{(t)} - \\frac{dt}{\\tau} \\nabla_{\\mathbf{g}_l}E(t)\\]\nHAMUX handles all the complexity of scaling this fundamental update equation to many layers and hyper synapses. In addition, it provides a framework to:\n\nImplement your favorite Deep Learning operations as a HyperSynapse\nPort over your favorite activation functions as Lagrangians\nConnect your layers and hypersynapses into a HAM (using a hypergraph as the data structure)\nInject your data into the associative memory\nAutomatically calculate and descend the energy given the hidden states at any point in time\n\nUse these features to train any hierarchical associative memory on your own data! All of this made possible by JAX.\nThe examples/ subdirectory contains a (growing) list of examples on how to apply HAMUX on real data.",
+    "crumbs": [
+      "HAMUX"
+    ]
+  },
+  {
+    "objectID": "index.html#contributing-to-the-docs",
+    "href": "index.html#contributing-to-the-docs",
+    "title": "HAMUX",
+    "section": "Contributing to the docs",
+    "text": "Contributing to the docs\n\n\n\n\n\n\nWarning\n\n\n\nThis README is automatically generated from docs_src/nbs/index.qmd do NOT edit it directly.\n\n\nFrom the root of this project:\n. scripts/activate.sh # Activate the virtual environment\ncd docs_src/\nnbdev_preview # Live preview docs site\nnbdev_test # Test the code examples in the docs\nnbdev_docs # Generate static build\nMerge the doc changes into main or dev (see /.github/workflows/pages.yml) to deploy the docs site to the gh-pages branch.",
+    "crumbs": [
+      "HAMUX"
+    ]
+  },
+  {
+    "objectID": "02_neurons.html",
+    "href": "02_neurons.html",
+    "title": "Neuron Layers",
+    "section": "",
+    "text": "Neuron Layers\n\nTurning Lagrangians into building blocks for our network",
+    "crumbs": [
+      "Neuron Layers"
+    ]
+  },
+  {
+    "objectID": "01_lagrangians.html",
+    "href": "01_lagrangians.html",
+    "title": "Lagrangians",
+    "section": "",
+    "text": "The well-behaved energy of associative memories is captured by the Lagrangian of the neurons\nThe dynamic state of each 🌀neuron layer is constrained by a convex Lagrangian.",
+    "crumbs": [
+      "Lagrangians"
+    ]
+  },
+  {
+    "objectID": "01_lagrangians.html#functional-interface",
+    "href": "01_lagrangians.html#functional-interface",
+    "title": "Lagrangians",
+    "section": "Functional interface",
+    "text": "Functional interface\nLagrangian functions are fundamental to the energy of 🌀neuron layers. These convex functions can be seen as the integral of common activation functions (e.g., relus and softmaxes). All Lagrangians are functions of the form:\n\\[\\mathcal{L}(\\mathbf{x};\\ldots) \\mapsto \\mathbb{R}\\]\nwhere \\(\\mathbf{x} \\in \\mathbb{R}^{D_1 \\times \\ldots \\times D_n}\\) can be a tensor of arbitrary shape and \\(\\mathcal{L}\\) can be optionally parameterized (e.g., the LayerNorm’s learnable bias and scale). Lagrangians must be convex and differentiable.\nWe want to rely on JAX’s autograd to automatically differentiate our Lagrangians into activation functions. For certain Lagrangians, the naively autodiff-ed function of the defined Lagrangian is numerically unstable (e.g., lagr_sigmoid(x) and lagr_tanh(x)). In these cases, we follow JAX’s documentation guidelines to define custom_jvps to fix this behavior.\nLet’s look at what some of these Lagrangians look like in practice.",
+    "crumbs": [
+      "Lagrangians"
+    ]
+  },
+  {
+    "objectID": "01_lagrangians.html#elementwise-lagrangians",
+    "href": "01_lagrangians.html#elementwise-lagrangians",
+    "title": "Lagrangians",
+    "section": "Elementwise Lagrangians",
+    "text": "Elementwise Lagrangians\nThough we define Lagrangians for an entire tensor, these special “elementwise Lagrangians” take a special form: they are simply the sum of the convex, differentiable function applied elementwise to the underlying tensor. This makes it easy to plot and visualize them.\n\n\n\n\nlagr_identity\n\n lagr_identity (x:jax.Array)\n\nThe Lagrangian whose activation function is simply the identity.\n\n\n\n\nType\nDetails\n\n\n\n\nx\nArray\nInput tensor\n\n\nReturns\nFloat\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{identity}(\\mathbf{x}) &= \\frac{1}{2} \\sum_i x_i^2 \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{identity}(\\mathbf{x}) &= x_i\n\\end{align*}\n\\]\n\n\n\n\n\n\n\n\n\n\n\n\n\nlagr_repu\n\n lagr_repu (x:jax.Array, n:float)\n\nRectified Power Unit of degree n\n\n\n\n\nType\nDetails\n\n\n\n\nx\nArray\nInput tensor\n\n\nn\nfloat\nDegree of the polynomial in the power unit\n\n\nReturns\nFloat\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{RePU}(\\mathbf{x}; n) &= \\frac{1}{n} \\sum_i \\max(x_i, 0)^n \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{RePU}(\\mathbf{x}; n) &= \\max(x_i, 0)^{n-1}\n\\end{align*}\n\\]\n\n\n\n\n\n\n\n\n\n\n\n\n\nlagr_relu\n\n lagr_relu (x:jax.Array)\n\nRectified Linear Unit. Same as lagr_repu of degree 2\n\n\n\n\nType\nDetails\n\n\n\n\nx\nArray\nInput tensor\n\n\nReturns\nFloat\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{relu}(\\mathbf{x}) &= \\frac{1}{2} \\sum_i \\max(x_i, 0)^2 \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{relu}(\\mathbf{x}) &= \\max(x_i, 0)\n\\end{align*}\n\\]\n\n\n\n\nlagr_exp\n\n lagr_exp (x:jax.Array, beta:float=1.0)\n\nExponential activation function, as in Demicirgil et al.. Operates elementwise\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nArray\n\nInput tensor\n\n\nbeta\nfloat\n1.0\nInverse temperature\n\n\nReturns\nFloat\n\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{exp}(\\mathbf{x}; \\beta) &= \\frac{1}{\\beta} \\sum_i e^{\\beta x_i} \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{exp}(\\mathbf{x}; \\beta) &= e^{\\beta x_i}\n\\end{align*}\n\\]\n\n\n\n\n\n\n\n\n\n\n\n\n\nlagr_tanh\n\n lagr_tanh (x:jax.Array, beta:float=1.0)\n\nLagrangian of the tanh activation function\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nArray\n\nInput tensor\n\n\nbeta\nfloat\n1.0\nInverse temperature\n\n\nReturns\nFloat\n\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{tanh}(\\mathbf{x}; \\beta) &= \\frac{1}{\\beta} \\sum_i \\log(\\cosh(\\beta x_i)) \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{tanh}(\\mathbf{x}; \\beta) &= \\tanh(\\beta x_i)\n\\end{align*}\n\\]\n\n\n\n\nlagr_sigmoid\n\n lagr_sigmoid (x:jax.Array, beta:float=1.0)\n\nThe lagrangian of the sigmoid activation function\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nArray\n\nInput tensor\n\n\nbeta\nfloat\n1.0\nInverse temperature\n\n\nReturns\nFloat\n\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{sigmoid}(\\mathbf{x}; \\beta) &= \\frac{1}{\\beta} \\sum_i \\log(e^{\\beta x_i} + 1) \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{sigmoid}(\\mathbf{x}; \\beta) &= \\frac{1}{1+e^{-\\beta x_i}}\n\\end{align*}\n\\]",
+    "crumbs": [
+      "Lagrangians"
+    ]
+  },
+  {
+    "objectID": "01_lagrangians.html#lagrangians-for-competing-units",
+    "href": "01_lagrangians.html#lagrangians-for-competing-units",
+    "title": "Lagrangians",
+    "section": "Lagrangians for competing units",
+    "text": "Lagrangians for competing units\nHowever, we can also have Lagrangians defined on neuron layers where every unit competes. There are many forms of activation functions in modern Deep Learning with this structure; e.g., softmaxes, layernorms, etc. normalize their input by some value. These activation functions can similarly be described by Lagrangians (and there is a nice interpretation of these kinds of activation functions as competing hidden units, but it is harder to plot them.\n\n\n\n\nlagr_softmax\n\n lagr_softmax (x:jax.Array, beta:float=1.0, axis:int=-1)\n\nThe lagrangian of the softmax – the logsumexp\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nArray\n\nInput tensor\n\n\nbeta\nfloat\n1.0\nInverse temperature\n\n\naxis\nint\n-1\nDimension over which to apply logsumexp\n\n\nReturns\nFloat\n\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{softmax}(\\mathbf{x}; \\beta) &= \\frac{1}{\\beta} \\log \\sum_i e^{\\beta x_i} \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{softmax}(\\mathbf{x}; \\beta) &= \\frac{e^{\\beta x_i}}{\\sum_j e^{\\beta x_j}}\n\\end{align*}\n\\]\nWe plot its activations (the softmax) for a vector of length 10 below.\n\n\n\n\n\n\n\n\n\n\n\n\n\nlagr_layernorm\n\n lagr_layernorm (x:jax.Array, gamma:float=1.0,\n                 delta:Union[float,jax.Array]=0.0, axis:int=-1,\n                 eps:float=1e-05)\n\n*Lagrangian of the layer norm activation function.\ngamma must be a float, not a vector.*\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nArray\n\nInput tensor\n\n\ngamma\nfloat\n1.0\nScale the stdev\n\n\ndelta\nUnion\n0.0\nShift the mean\n\n\naxis\nint\n-1\nWhich axis to normalize\n\n\neps\nfloat\n1e-05\nPrevent division by 0\n\n\nReturns\nFloat\n\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{layernorm}(\\mathbf{x}; \\gamma, \\delta) &= D \\gamma \\sqrt{\\text{Var}(\\mathbf{x}) + \\epsilon} + \\sum_i \\delta_i x_i \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{layernorm}(\\mathbf{x}; \\gamma, \\delta) &= \\gamma \\frac{x_i - \\text{Mean}(\\mathbf{x})}{\\sqrt{\\text{Var}(\\mathbf{x}) + \\epsilon}} + \\delta_i\n\\end{align*}\n\\]\n\n\n\n\nlagr_spherical_norm\n\n lagr_spherical_norm (x:jax.Array, gamma:float=1.0,\n                      delta:Union[float,jax.Array]=0.0, axis:int=-1,\n                      eps:float=1e-05)\n\nLagrangian of the spherical norm (L2 norm) activation function\n\n\n\n\nType\nDefault\nDetails\n\n\n\n\nx\nArray\n\ninput tensor\n\n\ngamma\nfloat\n1.0\nScale the stdev\n\n\ndelta\nUnion\n0.0\nShift the mean\n\n\naxis\nint\n-1\nWhich axis to normalize\n\n\neps\nfloat\n1e-05\nPrevent division by 0\n\n\nReturns\nFloat\n\nOutput scalar\n\n\n\n\n\n\n\\[\n\\begin{align*}\n\\mathcal{L}_\\text{L2norm}(\\mathbf{x}; \\gamma, \\delta) &= \\gamma \\sqrt{\\sum_i x_i^2 + \\epsilon} + \\sum_i \\delta_i x_i \\\\\n\\partial_{x_i} \\mathcal{L}_\\text{L2norm}(\\mathbf{x}; \\gamma, \\delta) &= \\gamma \\frac{x_i}{\\sqrt{\\sum_j x_j^2 + \\epsilon}} + \\delta_i\n\\end{align*}\n\\]",
+    "crumbs": [
+      "Lagrangians"
+    ]
+  }
+]
