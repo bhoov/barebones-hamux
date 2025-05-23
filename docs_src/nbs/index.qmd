@@ -66,12 +66,18 @@ The `examples/` subdirectory contains a (growing) list of examples on how to app
 
 ## Contributing to the docs
 
+:::{.callout-warning}
+This README is automatically generated from `docs_src/nbs/index.qmd` do NOT edit it directly.
+:::
+
+From the root of this project:
+
 ```         
 . scripts/activate.sh # Activate the virtual environment
 cd docs_src/
 nbdev_preview # Live preview docs site
 nbdev_test # Test the code examples in the docs
-nbdev_docs # Generate the static docs site
+nbdev_docs # Generate static build
 ```
 
 Merge the doc changes into `main` or `dev` (see `/.github/workflows/pages.yml`) to deploy the docs site to the `gh-pages` branch.

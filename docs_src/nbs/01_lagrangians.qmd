@@ -4,7 +4,6 @@
 
 The dynamic state of each [🌀neuron layer](./02_neurons.qmd) is constrained by a convex Lagrangian.
 
-
 ```{python}
 #| echo: false
 #| output: false
@@ -45,13 +44,11 @@ show_doc(lagr_identity)
 ```
 
 $$
-\mathcal{L}_\text{identity}(\mathbf{x}) = \frac{1}{2} \sum_i x_i^2
+\begin{align*}
+\mathcal{L}_\text{identity}(\mathbf{x}) &= \frac{1}{2} \sum_i x_i^2 \\
+\partial_{x_i} \mathcal{L}_\text{identity}(\mathbf{x}) &= x_i
+\end{align*}
 $$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{identity}(\mathbf{x}) = x_i
-$$
-
 
 ```{python}
 #| echo: false
@@ -65,21 +62,17 @@ ax.legend(["activation", "lagrangian"])
 plt.show(fig)
 ```
 
-
-
 ```{python}
 #| echo: false
 show_doc(lagr_repu)
 ```
 
 $$
-\mathcal{L}_\text{RePU}(\mathbf{x}; n) = \frac{1}{n} \sum_i \max(x_i, 0)^n
+\begin{align*}
+\mathcal{L}_\text{RePU}(\mathbf{x}; n) &= \frac{1}{n} \sum_i \max(x_i, 0)^n \\
+\partial_{x_i} \mathcal{L}_\text{RePU}(\mathbf{x}; n) &= \max(x_i, 0)^{n-1}
+\end{align*}
 $$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{RePU}(\mathbf{x}; n) = \max(x_i, 0)^{n-1}
-$$
-
 
 ```{python}
 #| echo: false
@@ -102,20 +95,17 @@ ax.legend(legend)
 plt.show(fig)
 ```
 
-
 ```{python}
 #| echo: false
 show_doc(lagr_relu)
 ```
 
 $$
-\mathcal{L}_\text{relu}(\mathbf{x}) = \frac{1}{2} \sum_i \max(x_i, 0)^2
+\begin{align*}
+\mathcal{L}_\text{relu}(\mathbf{x}) &= \frac{1}{2} \sum_i \max(x_i, 0)^2 \\
+\partial_{x_i} \mathcal{L}_\text{relu}(\mathbf{x}) &= \max(x_i, 0)
+\end{align*}
 $$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{relu}(\mathbf{x}) = \max(x_i, 0)
-$$
-
 
 ```{python}
 #| echo: false
@@ -123,13 +113,11 @@ show_doc(lagr_exp)
 ```
 
 $$
-\mathcal{L}_\text{exp}(\mathbf{x}; \beta) = \frac{1}{\beta} \sum_i e^{\beta x_i}
+\begin{align*}
+\mathcal{L}_\text{exp}(\mathbf{x}; \beta) &= \frac{1}{\beta} \sum_i e^{\beta x_i} \\
+\partial_{x_i} \mathcal{L}_\text{exp}(\mathbf{x}; \beta) &= e^{\beta x_i}
+\end{align*}
 $$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{exp}(\mathbf{x}; \beta) = e^{\beta x_i}
-$$
-
 
 ```{python}
 #| echo: false
@@ -158,13 +146,11 @@ show_doc(lagr_tanh)
 ```
 
 $$
-\mathcal{L}_\text{tanh}(\mathbf{x}; \beta) = \frac{1}{\beta} \sum_i \log(\cosh(\beta x_i))
+\begin{align*}
+\mathcal{L}_\text{tanh}(\mathbf{x}; \beta) &= \frac{1}{\beta} \sum_i \log(\cosh(\beta x_i)) \\
+\partial_{x_i} \mathcal{L}_\text{tanh}(\mathbf{x}; \beta) &= \tanh(\beta x_i)
+\end{align*}
 $$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{tanh}(\mathbf{x}; \beta) = \tanh(\beta x_i)
-$$
-
 
 ```{python}
 #| echo: false
@@ -172,13 +158,11 @@ show_doc(lagr_sigmoid)
 ```
 
 $$
-\mathcal{L}_\text{sigmoid}(\mathbf{x}; \beta) = \frac{1}{\beta} \sum_i \log(e^{\beta x_i} + 1)
+\begin{align*}
+\mathcal{L}_\text{sigmoid}(\mathbf{x}; \beta) &= \frac{1}{\beta} \sum_i \log(e^{\beta x_i} + 1) \\
+\partial_{x_i} \mathcal{L}_\text{sigmoid}(\mathbf{x}; \beta) &= \frac{1}{1+e^{-\beta x_i}}
+\end{align*}
 $$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{sigmoid}(\mathbf{x}; \beta) = \frac{1}{1+e^{-\beta x_i}}
-$$
-
 
 ```{python}
 #| echo: false
@@ -204,11 +188,9 @@ ax.legend(legend)
 plt.show(fig)
 ```
 
-
 ## Lagrangians for competing units
 
 However, we can also have Lagrangians defined on neuron layers where every unit competes. There are many forms of activation functions in modern Deep Learning with this structure; e.g., `softmax`es, `layernorm`s, etc. normalize their input by some value. These activation functions can similarly be described by Lagrangians (and there is a nice interpretation of these kinds of activation functions as [competing hidden units](https://arxiv.org/abs/1806.10181), but it is harder to plot them.
-
 
 ```{python}
 #| echo: false
@@ -216,11 +198,10 @@ show_doc(lagr_softmax)
 ```
 
 $$
-\mathcal{L}_\text{softmax}(\mathbf{x}; \beta) = \frac{1}{\beta} \log \sum_i e^{\beta x_i}
-$$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{softmax}(\mathbf{x}; \beta) = \frac{e^{\beta x_i}}{\sum_j e^{\beta x_j}}
+\begin{align*}
+\mathcal{L}_\text{softmax}(\mathbf{x}; \beta) &= \frac{1}{\beta} \log \sum_i e^{\beta x_i} \\
+\partial_{x_i} \mathcal{L}_\text{softmax}(\mathbf{x}; \beta) &= \frac{e^{\beta x_i}}{\sum_j e^{\beta x_j}}
+\end{align*}
 $$
 
 We plot its activations (the softmax) for a vector of length 10 below.
@@ -238,20 +219,17 @@ ax.legend(["softmax"])
 plt.show(fig)
 ```
 
-
 ```{python}
 #| echo: false
 show_doc(lagr_layernorm)
 ```
 
 $$
-\mathcal{L}_\text{layernorm}(\mathbf{x}; \gamma, \delta) = D \gamma \sqrt{\text{Var}(\mathbf{x}) + \epsilon} + \sum_i \delta_i x_i
+\begin{align*}
+\mathcal{L}_\text{layernorm}(\mathbf{x}; \gamma, \delta) &= D \gamma \sqrt{\text{Var}(\mathbf{x}) + \epsilon} + \sum_i \delta_i x_i \\
+\partial_{x_i} \mathcal{L}_\text{layernorm}(\mathbf{x}; \gamma, \delta) &= \gamma \frac{x_i - \text{Mean}(\mathbf{x})}{\sqrt{\text{Var}(\mathbf{x}) + \epsilon}} + \delta_i
+\end{align*}
 $$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{layernorm}(\mathbf{x}; \gamma, \delta) = \gamma \frac{x_i - \text{Mean}(\mathbf{x})}{\sqrt{\text{Var}(\mathbf{x}) + \epsilon}} + \delta_i
-$$
-
 
 ```{python}
 #| echo: false
@@ -259,9 +237,8 @@ show_doc(lagr_spherical_norm)
 ```
 
 $$
-\mathcal{L}_\text{L2norm}(\mathbf{x}; \gamma, \delta) = \gamma \sqrt{\sum_i x_i^2 + \epsilon} + \sum_i \delta_i x_i
-$$
-
-$$
-\partial_{x_i} \mathcal{L}_\text{L2norm}(\mathbf{x}; \gamma, \delta) = \gamma \frac{x_i}{\sqrt{\sum_j x_j^2 + \epsilon}} + \delta_i
+\begin{align*}
+\mathcal{L}_\text{L2norm}(\mathbf{x}; \gamma, \delta) &= \gamma \sqrt{\sum_i x_i^2 + \epsilon} + \sum_i \delta_i x_i \\
+\partial_{x_i} \mathcal{L}_\text{L2norm}(\mathbf{x}; \gamma, \delta) &= \gamma \frac{x_i}{\sqrt{\sum_j x_j^2 + \epsilon}} + \delta_i
+\end{align*}
 $$

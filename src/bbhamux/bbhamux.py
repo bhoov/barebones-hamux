@@ -411,28 +411,26 @@ def lagr_tanh(x, beta=1.0):  # Inverse temperature
 def _lagr_sigmoid(
     x,
     beta=1.0,  # Inverse temperature
-    scale=1.0,
 ):  # Amount to stretch the range of the sigmoid's lagrangian
     """The lagrangian of a sigmoid that we can define custom JVPs of"""
-    return scale / beta * jnp.log(jnp.exp(beta * x) + 1)
+    return 1. / beta * jnp.log(jnp.exp(beta * x) + 1)
 
 
 def _tempered_sigmoid(
     x,
     beta=1.0,  # Inverse temperature
-    scale=1.0,
 ):  # Amount to stretch the range of the sigmoid
     """The basic sigmoid, but with a scaling factor"""
-    return scale / (1 + jnp.exp(-beta * x))
+    return 1. / (1 + jnp.exp(-beta * x))
 
 
 @_lagr_sigmoid.defjvp
 def _lagr_sigmoid_jvp(primals, tangents):
-    x, beta, scale = primals
-    x_dot, beta_dot, scale_dot = tangents
-    primal_out = _lagr_sigmoid(x, beta, scale)
+    x, beta = primals
+    x_dot, beta_dot = tangents
+    primal_out = _lagr_sigmoid(x, beta)
     tangent_out = (
-        _tempered_sigmoid(x, beta=beta, scale=scale) * x_dot
+        _tempered_sigmoid(x, beta=beta) * x_dot
     )  # Manually defined sigmoid
     return primal_out, tangent_out
 
@@ -440,10 +438,9 @@ def _lagr_sigmoid_jvp(primals, tangents):
 def lagr_sigmoid(
     x,
     beta=1.0,  # Inverse temperature
-    scale=1.0,
 ):  # Amount to stretch the range of the sigmoid's lagrangian
     """The lagrangian of the sigmoid activation function"""
-    return _lagr_sigmoid(x, beta=beta, scale=scale).sum()
+    return _lagr_sigmoid(x, beta=beta).sum()
 
 
 def _simple_layernorm(
@@ -488,13 +485,13 @@ def _simple_spherical_norm(
 
 
 def lagr_spherical_norm(
-    x: jnp.ndarray,
+    x: Array,
     gamma: float = 1.0,  # Scale the stdev
     delta: Union[float, jnp.ndarray] = 0.0,  # Shift the mean
     axis=-1,  # Which axis to normalize
     eps=1e-5,  # Prevent division by 0
 ):
-    """Lagrangian of the spherical norm activation function"""
+    """Lagrangian of the spherical norm (L2 norm) activation function"""
     y = jnp.sqrt(jnp.power(x, 2).sum(axis, keepdims=True) + eps)
     return (gamma * y + (delta * x).sum()).sum()
 
