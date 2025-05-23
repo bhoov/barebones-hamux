@@ -67,8 +67,11 @@ The `examples/` subdirectory contains a (growing) list of examples on how to app
 ## Contributing to the docs
 
 ```         
+. scripts/activate.sh # Activate the virtual environment
 cd docs_src/
 nbdev_preview # Live preview docs site
 nbdev_test # Test the code examples in the docs
-nbdev_docs # Deploy the static docs site
+nbdev_docs # Generate the static docs site
 ```
+
+Merge the doc changes into `main` or `dev` (see `/.github/workflows/pages.yml`) to deploy the docs site to the `gh-pages` branch.

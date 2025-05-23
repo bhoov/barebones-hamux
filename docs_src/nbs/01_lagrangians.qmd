@@ -68,6 +68,7 @@ plt.show(fig)
 
 
 ```{python}
+#| echo: false
 show_doc(lagr_repu)
 ```
 
@@ -103,6 +104,7 @@ plt.show(fig)
 
 
 ```{python}
+#| echo: false
 show_doc(lagr_relu)
 ```
 
@@ -116,6 +118,7 @@ $$
 
 
 ```{python}
+#| echo: false
 show_doc(lagr_exp)
 ```
 
@@ -150,6 +153,7 @@ plt.show(fig)
 ```
 
 ```{python}
+#| echo: false
 show_doc(lagr_tanh)
 ```
 
@@ -163,6 +167,7 @@ $$
 
 
 ```{python}
+#| echo: false
 show_doc(lagr_sigmoid)
 ```
 
@@ -206,6 +211,7 @@ However, we can also have Lagrangians defined on neuron layers where every unit 
 
 
 ```{python}
+#| echo: false
 show_doc(lagr_softmax)
 ```
 
@@ -234,6 +240,7 @@ plt.show(fig)
 
 
 ```{python}
+#| echo: false
 show_doc(lagr_layernorm)
 ```
 
@@ -247,6 +254,7 @@ $$
 
 
 ```{python}
+#| echo: false
 show_doc(lagr_spherical_norm)
 ```
 
