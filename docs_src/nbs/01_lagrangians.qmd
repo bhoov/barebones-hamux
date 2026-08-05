@@ -1,6 +1,6 @@
 # Lagrangians
 
-> The well-behaved energy of associative memories is captured by the Lagrangian of the neurons
+> the well-behaved energy of associative memories is captured by the lagrangian of the neurons
 
 The dynamic state of each [🌀neuron layer](./02_neurons.qmd) is constrained by a convex Lagrangian.
 
@@ -164,29 +164,6 @@ $$
 \end{align*}
 $$
 
-```{python}
-#| echo: false
-x = np.linspace(-6,6,100)
-betas = [0.5,1.,5.]
-fig, ax = plt.subplots(1)
-colors = 'bgr'
-
-legend = []
-for i, b in enumerate(betas):
-    lagr_fn = ft.partial(lagr_sigmoid, beta=b)
-    y = jax.grad(lagr_fn)(x)
-    L = jax.vmap(lagr_fn)(x)
-    c = colors[i]
-    legend += [f"activation (beta={b})", f"lagrangian (beta={b})"]
-    ax.plot(x,y,f"{c}--", x,L,f"{c}-")
-    # ax.set_title(r"$\mathcal{L}_\text{tanh}(x; \beta) = \frac{1}{\beta} \sum \log(\cosh(\beta x))$")
-    ax.set_title(r"$\mathcal{L}_\text{sigmoid}(x; \beta) = \frac{1}{\beta} \sum \log(e^{\beta x} + 1)$")
-
-
-
-ax.legend(legend)
-plt.show(fig)
-```
 
 ## Lagrangians for competing units
 
